@@ -1,0 +1,12 @@
+[
+  {
+    "name": "Wurmz",
+    "author": "Konmik",
+    "version": "2.9.0",
+    "pkg": "ext_wurmz",
+    "lang": "id",
+    "file": "ext_wurmz.js",
+    "icon": "https://wurmz.net/favicon.ico",
+    "nsfw": 0
+  }
+]
