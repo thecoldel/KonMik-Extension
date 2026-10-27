@@ -113,10 +113,31 @@
             color: #ffffff;
             border-color: rgba(255, 255, 255, 0.2);
         }
+
+        /* --- KURSOR GLOW ESTETIK --- */
+        .cursor-glow {
+            width: 25px;
+            height: 25px;
+            background: linear-gradient(135deg, #FF7A00, #FFC061, #FF3D00);
+            border-radius: 50%;
+            position: fixed;
+            top: 0;
+            left: 0;
+            pointer-events: none; /* Penting agar tidak menghalangi klik */
+            z-index: 9999;
+            transform: translate(-50%, -50%);
+            filter: blur(12px); /* Pendaran estetik */
+            opacity: 0.7;
+            will-change: transform;
+            display: none; /* Muncul hanya ketika digerakkan */
+        }
     </style>
 </head>
 <body class="bg-[#09090b] text-zinc-100 min-h-screen font-sans selection:bg-primary selection:text-white bg-grid relative overflow-x-hidden antialiased">
     
+    <!-- ELEMEN KURSOR GLOW -->
+    <div class="cursor-glow"></div>
+
     <div class="glow-bg"></div>
 
     <!-- Navbar -->
@@ -179,7 +200,7 @@
             </div>
             <div class="w-full sm:w-72">
                 <input type="text" id="search-input" placeholder="Cari ekstensi..." 
-                    class="w-full bg-zinc-900/80 border border-zinc-800 text-sm rounded-xl px-4 py-2.5 focus:outline-none focus:border-primary text-zinc-100 placeholder-zinc-500 transition-all shadow-sm">
+                    class="w-full bg-zinc-900/80 border border-zinc-800 text-sm rounded-xl px-4 py-2.5 focus:outline-none focus:border-primary text-zinc-100 placeholder-zinc-500 transition-all shadow-sm cursor-text">
             </div>
         </div>
 
@@ -209,10 +230,45 @@
                 "file": "ext_wurmz.js",
                 "icon": "https://wurmz.net/favicon.ico",
                 "website": "https://wurmz.net",
+                // MENAMBAHKAN URL GIST SPESIFIK DI SINI
+                "raw_url": "https://gist.githubusercontent.com/thecoldel/934363a459f6de5e3d2b73085bbc6b4a/raw/wurmz.js",
                 "nsfw": 0
             }
         ];
 
+        // --- FUNGSI COPY TANPA ALERT (ESTETIK) ---
+        window.copyExtensionUrl = function(btnElement, url) {
+            navigator.clipboard.writeText(url).then(() => {
+                // Simpan teks HTML asli
+                const originalHtml = btnElement.innerHTML;
+                
+                // Ubah gaya tombol ke mode 'Sukses' sementara
+                btnElement.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg> Tersalin!`;
+                
+                // Kembalikan seperti semula setelah 2 detik
+                setTimeout(() => {
+                    btnElement.innerHTML = originalHtml;
+                }, 2000);
+            }).catch(err => {
+                console.error('Gagal menyalin teks: ', err);
+            });
+        };
+
+        // --- FUNGSI KURSOR GLOW ---
+        const cursorGlow = document.querySelector('.cursor-glow');
+        
+        document.addEventListener('mousemove', (e) => {
+            cursorGlow.style.display = 'block'; // Tampilkan saat mouse bergerak
+            requestAnimationFrame(() => {
+                cursorGlow.style.transform = `translate(calc(${e.clientX}px - 50%), calc(${e.clientY}px - 50%))`;
+            });
+        });
+
+        document.addEventListener('mouseleave', () => {
+            cursorGlow.style.display = 'none'; // Sembunyikan kalau mouse keluar browser
+        });
+
+        // --- FUNGSI RENDER EKSTENSI ---
         async function loadExtensions() {
             try {
                 const response = await fetch('index.json?t=' + Date.now());
@@ -236,75 +292,4 @@
             grid.innerHTML = '';
 
             if (extensions.length === 0) {
-                emptyState.classList.remove('hidden');
-                return;
-            } else {
-                emptyState.classList.add('hidden');
-            }
-
-            extensions.forEach((ext, index) => {
-                const rawFileUrl = `https://raw.githubusercontent.com/thecoldel/KonMik-Extension/main/${ext.file}`;
-                const sourceFileUrl = `https://github.com/thecoldel/KonMik-Extension/blob/main/${ext.file}`;
-
-                grid.innerHTML += `
-                    <div class="ext-card p-5 flex flex-col justify-between gap-5 shadow-lg">
-                        <div class="ext-content flex flex-col gap-5">
-                            <div class="flex items-start gap-4">
-                                <img src="${ext.icon}" alt="${ext.name}" class="w-14 h-14 rounded-xl bg-zinc-900 object-cover p-1.5 border border-zinc-800 shrink-0 shadow-inner">
-                                <div class="min-w-0 flex-1">
-                                    <div class="flex items-center justify-between gap-2 flex-wrap mb-1">
-                                        <h3 class="font-bold text-base text-zinc-100 tracking-tight">${ext.name}</h3>
-                                        <!-- Indikator On secara default agar akurat dan tidak salah deteksi off -->
-                                        <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-sm">
-                                            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                                            <span>On</span>
-                                        </div>
-                                    </div>
-                                    <p class="text-xs text-zinc-400">Oleh: <span class="text-zinc-300 font-semibold">${ext.author}</span></p>
-                                    <div class="flex items-center gap-2 mt-2">
-                                        <span class="bg-primary/10 text-primary text-[10px] font-extrabold px-2 py-0.5 rounded uppercase tracking-wider border border-primary/20">${ext.lang}</span>
-                                        <span class="text-[11px] text-zinc-500 bg-zinc-900 px-2 py-0.5 rounded-md font-mono border border-zinc-800">v${ext.version}</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Tombol Aksi: Copy URL & Source -->
-                            <div class="grid grid-cols-2 gap-2 pt-2 border-t border-zinc-800/60">
-                                <button onclick="navigator.clipboard.writeText('${rawFileUrl}'); alert('Link Raw GitHub ekstensi berhasil disalin!');" 
-                                    class="btn-gradient-copy text-xs font-semibold py-2.5 px-3 rounded-xl shadow-sm flex items-center justify-center gap-2">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"></path></svg>
-                                    Copy URL
-                                </button>
-                                <a href="${sourceFileUrl}" target="_blank" 
-                                    class="btn-source text-xs font-semibold py-2.5 px-3 rounded-xl shadow-sm flex items-center justify-center gap-1.5">
-                                    Source 
-                                    <svg class="w-3.5 h-3.5 text-zinc-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
-                                </a>
-                            </div>
-                        </div>
-
-                        <!-- Tombol Visit Website -->
-                        ${ext.website ? `
-                            <a href="${ext.website}" target="_blank" class="ext-content w-full bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 text-xs font-bold py-2.5 rounded-xl transition-all text-center flex items-center justify-center gap-1.5 shadow-sm">
-                                Visit Website 
-                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
-                            </a>
-                        ` : ''}
-                    </div>
-                `;
-            });
-        }
-
-        document.getElementById('search-input').addEventListener('input', (e) => {
-            const keyword = e.target.value.toLowerCase();
-            const filtered = allExtensions.filter(ext => 
-                ext.name.toLowerCase().includes(keyword) || 
-                ext.author.toLowerCase().includes(keyword)
-            );
-            renderExtensions(filtered);
-        });
-
-        loadExtensions();
-    </script>
-</body>
-</html>
+                emptyState
