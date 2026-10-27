@@ -53,7 +53,6 @@
             pointer-events: none;
         }
 
-        /* Kartu dengan efek gradien warna di background saat hover */
         .ext-card {
             background: rgba(18, 18, 22, 0.85);
             border: 1px solid rgba(255, 255, 255, 0.08);
@@ -75,33 +74,21 @@
             pointer-events: none;
         }
 
-        .ext-card:hover::after {
-            opacity: 1;
-        }
-
+        .ext-card:hover::after { opacity: 1; }
         .ext-card:hover {
             border-color: rgba(255, 122, 0, 0.5);
             transform: translateY(-2px);
             box-shadow: 0 10px 30px -10px rgba(255, 122, 0, 0.2);
         }
+        .ext-content { position: relative; z-index: 1; }
 
-        .ext-content {
-            position: relative;
-            z-index: 1;
-        }
-
-        /* Tombol Gradien Copy URL disamakan dengan tema oranye website */
         .btn-gradient-copy {
             background: linear-gradient(135deg, #FF7A00 0%, #ff9500 50%, #ffb703 100%);
             color: white;
             transition: opacity 0.2s ease, transform 0.2s ease;
         }
-        .btn-gradient-copy:hover {
-            opacity: 0.9;
-            transform: scale(1.01);
-        }
+        .btn-gradient-copy:hover { opacity: 0.9; transform: scale(1.01); }
 
-        /* Tombol Source */
         .btn-source {
             background: rgba(255, 255, 255, 0.04);
             border: 1px solid rgba(255, 255, 255, 0.08);
@@ -114,7 +101,7 @@
             border-color: rgba(255, 255, 255, 0.2);
         }
 
-        /* --- KURSOR GLOW ESTETIK --- */
+        /* Kursor Estetik */
         .cursor-glow {
             width: 25px;
             height: 25px;
@@ -123,21 +110,19 @@
             position: fixed;
             top: 0;
             left: 0;
-            pointer-events: none; /* Penting agar tidak menghalangi klik */
+            pointer-events: none;
             z-index: 9999;
             transform: translate(-50%, -50%);
-            filter: blur(12px); /* Pendaran estetik */
+            filter: blur(12px);
             opacity: 0.7;
             will-change: transform;
-            display: none; /* Muncul hanya ketika digerakkan */
+            display: none;
         }
     </style>
 </head>
 <body class="bg-[#09090b] text-zinc-100 min-h-screen font-sans selection:bg-primary selection:text-white bg-grid relative overflow-x-hidden antialiased">
     
-    <!-- ELEMEN KURSOR GLOW -->
     <div class="cursor-glow"></div>
-
     <div class="glow-bg"></div>
 
     <!-- Navbar -->
@@ -205,7 +190,7 @@
         </div>
 
         <div id="extension-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <!-- Kartu dimuat otomatis -->
+            <!-- Kartu akan dirender di sini oleh JavaScript -->
         </div>
 
         <div id="empty-state" class="hidden text-center py-16">
@@ -213,13 +198,13 @@
         </div>
     </main>
 
-    <!-- Footer -->
     <footer class="border-t border-zinc-800/80 py-6 text-center text-xs text-zinc-500">
         <p>© 2026 • Powered by GitHub & Vercel</p>
     </footer>
 
-    <!-- Script Logika -->
+    <!-- SCRIPT JAVASCRIPT (ANTI-ERROR) -->
     <script>
+        // Data Fallback (Akan dipakai jika index.json gagal dimuat)
         let allExtensions = [
             {
                 "name": "Wurmz",
@@ -230,66 +215,146 @@
                 "file": "ext_wurmz.js",
                 "icon": "https://wurmz.net/favicon.ico",
                 "website": "https://wurmz.net",
-                // MENAMBAHKAN URL GIST SPESIFIK DI SINI
                 "raw_url": "https://gist.githubusercontent.com/thecoldel/934363a459f6de5e3d2b73085bbc6b4a/raw/wurmz.js",
                 "nsfw": 0
             }
         ];
 
-        // --- FUNGSI COPY TANPA ALERT (ESTETIK) ---
+        // 1. Fungsi Copy URL tanpa Alert
         window.copyExtensionUrl = function(btnElement, url) {
             navigator.clipboard.writeText(url).then(() => {
-                // Simpan teks HTML asli
                 const originalHtml = btnElement.innerHTML;
-                
-                // Ubah gaya tombol ke mode 'Sukses' sementara
                 btnElement.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg> Tersalin!`;
-                
-                // Kembalikan seperti semula setelah 2 detik
-                setTimeout(() => {
-                    btnElement.innerHTML = originalHtml;
-                }, 2000);
-            }).catch(err => {
-                console.error('Gagal menyalin teks: ', err);
-            });
+                setTimeout(() => { btnElement.innerHTML = originalHtml; }, 2000);
+            }).catch(err => console.error('Gagal menyalin:', err));
         };
 
-        // --- FUNGSI KURSOR GLOW ---
-        const cursorGlow = document.querySelector('.cursor-glow');
-        
-        document.addEventListener('mousemove', (e) => {
-            cursorGlow.style.display = 'block'; // Tampilkan saat mouse bergerak
-            requestAnimationFrame(() => {
-                cursorGlow.style.transform = `translate(calc(${e.clientX}px - 50%), calc(${e.clientY}px - 50%))`;
-            });
-        });
-
-        document.addEventListener('mouseleave', () => {
-            cursorGlow.style.display = 'none'; // Sembunyikan kalau mouse keluar browser
-        });
-
-        // --- FUNGSI RENDER EKSTENSI ---
-        async function loadExtensions() {
-            try {
-                const response = await fetch('index.json?t=' + Date.now());
-                if (response.ok) {
-                    const data = await response.json();
-                    if (data && data.length > 0) {
-                        allExtensions = data;
-                    }
-                }
-            } catch (error) {
-                console.log('Menggunakan data bawaan.');
-            }
+        // 2. Jalankan logika HANYA setelah seluruh HTML selesai dimuat
+        document.addEventListener('DOMContentLoaded', () => {
             
-            document.getElementById('stat-total').innerText = String(allExtensions.length).padStart(2, '0');
-            renderExtensions(allExtensions);
-        }
+            // Logika Kursor Glow
+            const cursorGlow = document.querySelector('.cursor-glow');
+            if (cursorGlow) {
+                document.addEventListener('mousemove', (e) => {
+                    cursorGlow.style.display = 'block';
+                    requestAnimationFrame(() => {
+                        cursorGlow.style.transform = `translate(calc(${e.clientX}px - 50%), calc(${e.clientY}px - 50%))`;
+                    });
+                });
+                document.addEventListener('mouseleave', () => {
+                    cursorGlow.style.display = 'none';
+                });
+            }
 
-        function renderExtensions(extensions) {
-            const grid = document.getElementById('extension-grid');
-            const emptyState = document.getElementById('empty-state');
-            grid.innerHTML = '';
+            // Fungsi Render Kartu
+            function renderExtensions(extensionsToRender) {
+                const grid = document.getElementById('extension-grid');
+                const emptyState = document.getElementById('empty-state');
+                
+                if (!grid || !emptyState) return;
+                
+                grid.innerHTML = ''; // Kosongkan grid
 
-            if (extensions.length === 0) {
-                emptyState
+                if (!Array.isArray(extensionsToRender) || extensionsToRender.length === 0) {
+                    emptyState.classList.remove('hidden');
+                    return;
+                } else {
+                    emptyState.classList.add('hidden');
+                }
+
+                let cardsHTML = '';
+                extensionsToRender.forEach((ext) => {
+                    const rawFileUrl = ext.raw_url || `https://raw.githubusercontent.com/thecoldel/KonMik-Extension/main/${ext.file || ''}`;
+                    const sourceFileUrl = `https://github.com/thecoldel/KonMik-Extension/blob/main/${ext.file || ''}`;
+
+                    cardsHTML += `
+                        <div class="ext-card p-5 flex flex-col justify-between gap-5 shadow-lg relative cursor-default">
+                            <div class="ext-content flex flex-col gap-5">
+                                <div class="flex items-start gap-4">
+                                    <img src="${ext.icon || ''}" alt="${ext.name}" class="w-14 h-14 rounded-xl bg-zinc-900 object-cover p-1.5 border border-zinc-800 shrink-0 shadow-inner">
+                                    <div class="min-w-0 flex-1">
+                                        <div class="flex items-center justify-between gap-2 flex-wrap mb-1">
+                                            <h3 class="font-bold text-base text-zinc-100 tracking-tight">${ext.name || 'Unknown'}</h3>
+                                            <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-sm">
+                                                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                                                <span>On</span>
+                                            </div>
+                                        </div>
+                                        <p class="text-xs text-zinc-400">Oleh: <span class="text-zinc-300 font-semibold">${ext.author || '-'}</span></p>
+                                        <div class="flex items-center gap-2 mt-2">
+                                            <span class="bg-primary/10 text-primary text-[10px] font-extrabold px-2 py-0.5 rounded uppercase tracking-wider border border-primary/20">${ext.lang || 'ID'}</span>
+                                            <span class="text-[11px] text-zinc-500 bg-zinc-900 px-2 py-0.5 rounded-md font-mono border border-zinc-800">v${ext.version || '1.0'}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-2 gap-2 pt-2 border-t border-zinc-800/60">
+                                    <button onclick="copyExtensionUrl(this, '${rawFileUrl}')" 
+                                        class="btn-gradient-copy text-xs font-semibold py-2.5 px-3 rounded-xl shadow-sm flex items-center justify-center gap-2 relative z-10">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"></path></svg>
+                                        Copy URL
+                                    </button>
+                                    <a href="${sourceFileUrl}" target="_blank" 
+                                        class="btn-source text-xs font-semibold py-2.5 px-3 rounded-xl shadow-sm flex items-center justify-center gap-1.5 relative z-10 cursor-pointer">
+                                        Source 
+                                        <svg class="w-3.5 h-3.5 text-zinc-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                                    </a>
+                                </div>
+                            </div>
+
+                            ${ext.website ? `
+                                <a href="${ext.website}" target="_blank" class="ext-content w-full bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 text-xs font-bold py-2.5 rounded-xl transition-all text-center flex items-center justify-center gap-1.5 shadow-sm relative z-10 cursor-pointer">
+                                    Visit Website 
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                                </a>
+                            ` : ''}
+                        </div>
+                    `;
+                });
+                
+                grid.innerHTML = cardsHTML;
+            }
+
+            // Fungsi Ambil Data Ekstensi
+            async function loadData() {
+                try {
+                    const response = await fetch('index.json?t=' + Date.now());
+                    if (response.ok) {
+                        const data = await response.json();
+                        // Pastikan data benar-benar array dan tidak kosong sebelum menimpa default
+                        if (Array.isArray(data) && data.length > 0) {
+                            allExtensions = data;
+                        }
+                    }
+                } catch (error) {
+                    console.log('Gagal fetch JSON. Menggunakan data bawaan.');
+                }
+                
+                // Update angka Total Extensions
+                const statTotal = document.getElementById('stat-total');
+                if (statTotal) {
+                    statTotal.innerText = String(allExtensions.length).padStart(2, '0');
+                }
+                
+                renderExtensions(allExtensions);
+            }
+
+            // Fungsi Pencarian
+            const searchInput = document.getElementById('search-input');
+            if (searchInput) {
+                searchInput.addEventListener('input', (e) => {
+                    const keyword = e.target.value.toLowerCase();
+                    const filtered = allExtensions.filter(ext => 
+                        (ext.name && ext.name.toLowerCase().includes(keyword)) || 
+                        (ext.author && ext.author.toLowerCase().includes(keyword))
+                    );
+                    renderExtensions(filtered);
+                });
+            }
+
+            // Eksekusi skrip!
+            loadData();
+        });
+    </script>
+</body>
+</html>
