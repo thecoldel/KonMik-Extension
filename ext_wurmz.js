@@ -1,6 +1,6 @@
 // ID: ext_wurmz
 // NAME: Wurmz
-// VERSION: 2.9.0
+// VERSION: 2.9.1
 // COLOR: #FF7A00
 // ICON: https://wurmz.net/favicon.ico
 // REFERER: https://wurmz.net/
@@ -22,8 +22,21 @@ function cleanPath(path) {
     return cleaned;
 }
 
+// FUNGSI BARU: Untuk mengubah simbol HTML seperti &#x27; dan &amp; menjadi teks normal
+function decodeHTML(str) {
+    if (!str) return '';
+    return str
+        .replace(/&#(\d+);/g, (match, dec) => String.fromCharCode(dec))          // Mengubah angka desimal
+        .replace(/&#x([0-9a-fA-F]+);/g, (match, hex) => String.fromCharCode(parseInt(hex, 16))) // Mengubah angka hex (seperti &#x27;)
+        .replace(/&amp;/g, '&')
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&quot;/g, '"')
+        .replace(/&#39;/g, "'")
+        .replace(/&nbsp;/g, ' ');
+}
+
 const KonmikExtension = {
-    
     // -- 1. Memuat daftar komik --
     async getList(page, query, filters) {
         const pageNum = page || 1;
@@ -48,15 +61,18 @@ const KonmikExtension = {
             let coverUrl = match[2];
             let title = match[3].replace(/<[^>]*>/g, '').trim();
             
+            // PERBAIKAN: Terapkan fungsi decode pada judul di daftar
+            title = decodeHTML(title);
+            
             if (!coverUrl.startsWith('http')) {
                 coverUrl = BASE_URL + coverUrl;
             }
             
             mangaList.push({
-                id: id,            
-                title: title,                
-                cover_url: coverUrl,  
-                rating: '0.0', 
+                id: id,
+                title: title,
+                cover_url: coverUrl,
+                rating: '0.0',
                 views: '-'
             });
         }
@@ -84,12 +100,20 @@ const KonmikExtension = {
         // Judul Utama
         let title = cleanSlug;
         const titleMatch = html.match(/<h1[^>]*>(.*?)<\/h1>/);
-        if (titleMatch) title = titleMatch[1].replace(' Bahasa Indonesia', '').trim();
+        if (titleMatch) {
+            title = titleMatch[1].replace(' Bahasa Indonesia', '').trim();
+            // PERBAIKAN: Terapkan fungsi decode pada judul di halaman detail
+            title = decodeHTML(title); 
+        }
 
         // Deskripsi
         let description = 'Tidak ada deskripsi';
         const descMatch = html.match(/<p class="text-sm text-muted leading-relaxed">(.*?)<\/p>/);
-        if (descMatch) description = descMatch[1].trim();
+        if (descMatch) {
+            description = descMatch[1].trim();
+            // PERBAIKAN: Terapkan juga pada deskripsi agar simbol-simbolnya rapi
+            description = decodeHTML(description);
+        }
 
         // Author
         let author = '?';
@@ -101,7 +125,8 @@ const KonmikExtension = {
         const genreRegex = /<a href="\/genre\/[^"]+" class="chip">(.*?)<\/a>/g;
         let gMatch;
         while ((gMatch = genreRegex.exec(html)) !== null) {
-            genres.push(gMatch[1].trim());
+            // Decode nama genre jika ada simbol
+            genres.push(decodeHTML(gMatch[1].trim())); 
         }
 
         // --- Ekstraksi Bab & Waktu Rilis ---
@@ -109,16 +134,13 @@ const KonmikExtension = {
         const seenChapters = new Set();
         const chapterDateMap = {};
 
-        // Ambil waktu dari elemen baris chapter jika tersedia dari server
         const rowRegex = /href=["'][^"']*\/chapter\/([^"'\?#]+)["'][^>]*>(.*?)<\/a>/gs;
         let rMatch;
         while ((rMatch = rowRegex.exec(html)) !== null) {
             const chNum = rMatch[1].trim();
             const innerHtml = rMatch[2];
-
             const timeMatch = innerHtml.match(/<(?:span|time)[^>]*class=["'][^"']*ch-time[^"']*["'][^>]*>(.*?)<\/(?:span|time)>/s) ||
                               innerHtml.match(/<(?:span|time)[^>]*>(.*?)<\/(?:span|time)>/s);
-            
             let timeStr = '';
             if (timeMatch) {
                 let cleaned = timeMatch[1].replace(/<[^>]*>/g, '').replace(/<!-- -->/g, '').trim();
@@ -132,7 +154,6 @@ const KonmikExtension = {
             }
         }
 
-        // Ambil seluruh nomor chapter dari data JSON / script Next.js agar chapter lama tetap muncul lengkap
         const safeHtml = html.replace(/\\"/g, '"').replace(/\\\//g, '/');
         const labelRegex = /"chapter_label"\s*:\s*("[^"]+"|\d+)/g;
         const allLabels = [];
@@ -144,7 +165,6 @@ const KonmikExtension = {
             }
         }
 
-        // Fallback jika label JSON tidak ada
         if (allLabels.length === 0) {
             const hrefRegex = /href=["'][^"']*\/chapter\/([^"'\?#]+)["']/g;
             let hMatch;
@@ -156,7 +176,6 @@ const KonmikExtension = {
             }
         }
 
-        // Susun daftar chapter final
         for (const chNum of allLabels) {
             const chId = `${cleanSlug}/chapter/${chNum}`;
             if (!seenChapters.has(chId)) {
@@ -186,15 +205,13 @@ const KonmikExtension = {
     async getChapterImages(chapterId) {
         const cleanChapterId = cleanPath(chapterId);
         const url = `${BASE_URL}/detail/${cleanChapterId}`;
-
         const res = await fetch(url, { headers });
         if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
         const html = await res.text();
-
         const images = [];
         const seen = new Set();
         const safeHtml = html.replace(/\\"/g, '"').replace(/\\\//g, '/');
-
+        
         const cdnRegex = /https?:\/\/cdn\d*\.wurmz\.net\/img\/[^\s"'\s\)\>\\]+/g;
         let match;
         while ((match = cdnRegex.exec(safeHtml)) !== null) {
@@ -204,7 +221,7 @@ const KonmikExtension = {
                 images.push(cleanUrl);
             }
         }
-
+        
         if (images.length === 0) {
             const jsonMatch = safeHtml.match(/"images"\s*:\s*(\[[^\]]+\])/);
             if (jsonMatch) {
@@ -219,7 +236,7 @@ const KonmikExtension = {
                 }
             }
         }
-
+        
         if (images.length === 0) {
             const imgTagRegex = /<img[^>]+src=["'](https?:\/\/[^"']+)["']/g;
             while ((match = imgTagRegex.exec(safeHtml)) !== null) {
@@ -230,7 +247,6 @@ const KonmikExtension = {
                 }
             }
         }
-
         return images;
     }
 };
