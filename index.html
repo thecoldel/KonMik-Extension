@@ -20,14 +20,12 @@
         }
     </script>
     <style>
-        /* Efek latar belakang grid & gradien bergerak */
         .bg-grid {
             background-size: 40px 40px;
             background-image: linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
                               linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
         }
 
-        /* Animasi gradien bergerak pada teks */
         @keyframes gradientMove {
             0% { background-position: 0% 50%; }
             50% { background-position: 100% 50%; }
@@ -42,7 +40,6 @@
             animation: gradientMove 6s ease infinite;
         }
 
-        /* Efek cahaya gradien background */
         .glow-bg {
             position: absolute;
             width: 450px;
@@ -59,23 +56,21 @@
 </head>
 <body class="bg-[#09090b] text-zinc-100 min-h-screen font-sans selection:bg-primary selection:text-white bg-grid relative overflow-x-hidden antialiased">
     
-    <!-- Elemen Cahaya Gradien Latar Belakang -->
     <div class="glow-bg"></div>
 
     <!-- Navbar -->
     <header class="border-b border-zinc-800/80 bg-[#09090b]/80 backdrop-blur-md sticky top-0 z-50">
         <div class="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
             <div class="flex items-center gap-3">
-                <!-- Siluet Rubah Oranye Modern (Ikon SVG Line Art) -->
+                <!-- Ikon Siluet Rubah Oranye Modern (SVG Line Art) -->
                 <div class="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shadow-inner">
-                    <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
                     </svg>
                 </div>
                 <span class="font-bold text-sm tracking-tight text-zinc-200">KonMik Extensions</span>
             </div>
             
-            <!-- Tombol Navigasi: GitHub & Extension -->
             <div class="flex items-center gap-2">
                 <a href="https://github.com/thecoldel" target="_blank" class="text-xs bg-zinc-900 hover:bg-zinc-800 text-zinc-300 px-3.5 py-2 rounded-xl border border-zinc-800 transition-all font-medium flex items-center gap-1.5 shadow-sm">
                     <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
@@ -88,13 +83,12 @@
         </div>
     </header>
 
-    <!-- Hero Section (Banner Utama) -->
+    <!-- Hero Section -->
     <section class="max-w-4xl mx-auto px-4 pt-16 pb-12 text-center relative">
         <div class="inline-block mb-4 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-semibold tracking-wide uppercase">
             Personal Extension Collection
         </div>
         
-        <!-- Judul dengan Gradien Bergerak -->
         <h1 class="text-4xl sm:text-6xl font-extrabold tracking-tight mb-4">
             KonMik <span class="animated-gradient-text">Extension Library</span>
         </h1>
@@ -103,7 +97,6 @@
             Kumpulan ekstensi pembaca komik buatan, dikelola, dan dikoleksi secara mandiri dengan performa terbaik.
         </p>
 
-        <!-- Kotak Statistik -->
         <div class="grid grid-cols-2 gap-4 max-w-sm mx-auto mt-8">
             <div class="bg-zinc-900/60 border border-zinc-800/80 rounded-2xl p-4 backdrop-blur shadow-lg">
                 <div id="stat-total" class="text-2xl font-extrabold text-primary">0</div>
@@ -116,7 +109,7 @@
         </div>
     </section>
 
-    <!-- Main Content & Search -->
+    <!-- Main Content -->
     <main class="max-w-5xl mx-auto px-4 pb-20">
         
         <div class="mb-8 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-zinc-800/80 pt-8">
@@ -124,19 +117,16 @@
                 <h2 class="text-xl font-bold tracking-tight">Featured Extensions</h2>
                 <p class="text-xs text-zinc-400 mt-0.5">Pilih ekstensi dan pasang ke aplikasi pembaca komik.</p>
             </div>
-            <!-- Search Bar -->
             <div class="w-full sm:w-72">
                 <input type="text" id="search-input" placeholder="Cari ekstensi..." 
                     class="w-full bg-zinc-900/80 border border-zinc-800 text-sm rounded-xl px-4 py-2.5 focus:outline-none focus:border-primary text-zinc-100 placeholder-zinc-500 transition-all shadow-sm">
             </div>
         </div>
 
-        <!-- Grid Kartu Ekstensi -->
         <div id="extension-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <!-- Data dimuat otomatis lewat JS -->
+            <!-- Kartu dimuat otomatis -->
         </div>
 
-        <!-- Empty State -->
         <div id="empty-state" class="hidden text-center py-16">
             <p class="text-zinc-500 text-sm">Ekstensi tidak ditemukan.</p>
         </div>
@@ -168,7 +158,7 @@
             }
         }
 
-        async function renderExtensions(extensions) {
+        function renderExtensions(extensions) {
             const grid = document.getElementById('extension-grid');
             const emptyState = document.getElementById('empty-state');
             grid.innerHTML = '';
@@ -180,26 +170,9 @@
                 emptyState.classList.add('hidden');
             }
 
-            for (let ext of extensions) {
-                const rawFileUrl = `https://raw.githubusercontent.com/thecoldel/KonMik-Extension/main/${ext.file}`; const sourceFileUrl = `https://github.com/thecoldel/KonMik-Extension/blob/main/${ext.file}`;
-
-                // Cek status server (Online / Offline) menggunakan mode 'no-cors' atau fetch sederhana
-                let isOnline = true;
-                if (ext.website) {
-                    try {
-                        // Menggunakan timeout singkat untuk cek server
-                        const controller = new AbortController();
-                        const timeoutId = setTimeout(() => controller.abort(), 3500);
-                        await fetch(ext.website, { mode: 'no-cors', signal: controller.signal });
-                        clearTimeout(timeoutId);
-                    } catch (e) {
-                        isOnline = false;
-                    }
-                }
-
-                const statusBadge = isOnline 
-                    ? `<span class="flex items-center gap-1.5 text-[10px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Online</span>`
-                    : `<span class="flex items-center gap-1.5 text-[10px] font-bold text-rose-400 bg-rose-500/10 border border-rose-500/20 px-2 py-0.5 rounded-full"><span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span> Offline</span>`;
+            extensions.forEach((ext, index) => {
+                const rawFileUrl = `https://raw.githubusercontent.com/thecoldel/KonMik-Extension/main/${ext.file}`;
+                const sourceFileUrl = `https://github.com/thecoldel/KonMik-Extension/blob/main/${ext.file}`;
 
                 grid.innerHTML += `
                     <div class="bg-zinc-950/40 border border-zinc-800/80 hover:border-zinc-700 rounded-2xl p-5 flex flex-col justify-between gap-5 transition-all duration-300 shadow-lg group">
@@ -208,6 +181,79 @@
                                 <img src="${ext.icon}" alt="${ext.name}" class="w-14 h-14 rounded-xl bg-zinc-900 object-cover p-1.5 border border-zinc-800 shrink-0 group-hover:scale-105 transition-transform shadow-inner">
                                 <div class="min-w-0 flex-1">
                                     <div class="flex items-center justify-between gap-2 flex-wrap mb-1">
-                                        <h3 class="font-bold text-base text-zinc-100 tracking-tight">${ext.name}</h3>${statusBadge}
+                                        <h3 class="font-bold text-base text-zinc-100 tracking-tight">${ext.name}</h3>
+                                        <!-- Indikator On/Off bergaya pil (pill badge) persis seperti contoh gambar -->
+                                        <div id="status-${index}" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-zinc-800/50 text-zinc-400 border border-zinc-700/50 shadow-sm">
+                                            <span class="w-2 h-2 rounded-full bg-zinc-400"></span>
+                                            <span>Checking</span>
+                                        </div>
                                     </div>
-                                    <p class="text-xs text-zinc-400">Oleh: <span class="text-zinc-3
+                                    <p class="text-xs text-zinc-400">Oleh: <span class="text-zinc-300 font-semibold">${ext.author}</span></p>
+                                    <div class="flex items-center gap-2 mt-2">
+                                        <span class="bg-primary/10 text-primary text-[10px] font-extrabold px-2 py-0.5 rounded uppercase tracking-wider border border-primary/20">${ext.lang}</span>
+                                        <span class="text-[11px] text-zinc-500 bg-zinc-900 px-2 py-0.5 rounded-md font-mono border border-zinc-800">v${ext.version}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Tombol Aksi: Copy URL & Source -->
+                            <div class="grid grid-cols-2 gap-2 mt-4 pt-4 border-t border-zinc-800/60">
+                                <button onclick="navigator.clipboard.writeText('${rawFileUrl}'); alert('Link Raw GitHub ekstensi berhasil disalin!');" 
+                                    class="bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white text-xs font-semibold py-2.5 px-3 rounded-xl transition-all text-center border border-zinc-800 shadow-sm flex items-center justify-center gap-1.5">
+                                    📋 Copy URL
+                                </button>
+                                <a href="${sourceFileUrl}" target="_blank" 
+                                    class="bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white text-xs font-semibold py-2.5 px-3 rounded-xl transition-all text-center border border-zinc-800 shadow-sm flex items-center justify-center gap-1.5">
+                                    💻 Source
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Tombol Visit Website -->
+                        ${ext.website ? `
+                            <a href="${ext.website}" target="_blank" class="w-full bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 text-xs font-bold py-2.5 rounded-xl transition-all text-center block shadow-sm">
+                                Visit Website ↗
+                            </a>
+                        ` : ''}
+                    </div>
+                `;
+
+                if (ext.website) {
+                    checkServerStatus(ext.website, `status-${index}`);
+                }
+            });
+        }
+
+        async function checkServerStatus(url, elementId) {
+            const badge = document.getElementById(elementId);
+            if (!badge) return;
+
+            try {
+                const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`, { cache: 'no-store' });
+                if (res.ok) {
+                    // Style "On" persis seperti gambar referensi (Pill hijau terang dengan titik berkedip)[cite: 9]
+                    badge.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-sm";
+                    badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> On`;
+                } else {
+                    throw new Error();
+                }
+            } catch (e) {
+                // Style "Off" (Pill merah lembut)
+                badge.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/20 shadow-sm";
+                badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-rose-400"></span> Off`;
+            }
+        }
+
+        document.getElementById('search-input').addEventListener('input', (e) => {
+            const keyword = e.target.value.toLowerCase();
+            const filtered = allExtensions.filter(ext => 
+                ext.name.toLowerCase().includes(keyword) || 
+                ext.author.toLowerCase().includes(keyword)
+            );
+            renderExtensions(filtered);
+        });
+
+        loadExtensions();
+    </script>
+</body>
+</html>
