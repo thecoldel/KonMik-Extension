@@ -5,9 +5,22 @@
     "version": "2.9.0",
     "pkg": "ext_wurmz",
     "lang": "id",
-    "file": "ext_wurmz.js",
+    "file": "wurmz.js",
     "icon": "https://wurmz.net/favicon.ico",
     "website": "https://wurmz.net",
+    "raw_url": "https://gist.githubusercontent.com/thecoldel/934363a459f6de5e3d2b73085bbc6b4a/raw/wurmz.js",
+    "nsfw": 0
+  },
+  {
+    "name": "NamaKomikBaru",
+    "author": "Konmik",
+    "version": "1.0.0",
+    "pkg": "ext_namakomik",
+    "lang": "id",
+    "file": "namakomik.js",
+    "icon": "https://situskomikbaru.com/favicon.ico",
+    "website": "https://situskomikbaru.com",
+    "raw_url": "",
     "nsfw": 0
   }
 ]
