@@ -199,29 +199,33 @@
 
     <!-- Script Logika -->
     <script>
-        let allExtensions = [];
+        // Data cadangan utama agar halaman langsung terisi tanpa menunggu fetch/cache Vercel
+        let allExtensions = [
+            {
+                "name": "Wurmz",
+                "author": "Konmik",
+                "version": "2.9.0",
+                "pkg": "ext_wurmz",
+                "lang": "id",
+                "file": "ext_wurmz.js",
+                "icon": "https://wurmz.net/favicon.ico",
+                "website": "https://wurmz.net",
+                "nsfw": 0
+            }
+        ];
 
         async function loadExtensions() {
             try {
-                const response = await fetch('index.json');
-                if (!response.ok) throw new Error('File index.json tidak ditemukan');
-                allExtensions = await response.json();
-            } catch (error) {
-                console.warn('Gagal memuat dari index.json, menggunakan data cadangan (fallback).');
-                // Data cadangan otomatis agar halaman tidak kosong
-                allExtensions = [
-                    {
-                        "name": "Wurmz",
-                        "author": "Konmik",
-                        "version": "2.9.0",
-                        "pkg": "ext_wurmz",
-                        "lang": "id",
-                        "file": "ext_wurmz.js",
-                        "icon": "https://wurmz.net/favicon.ico",
-                        "website": "https://wurmz.net",
-                        "nsfw": 0
+                // Tambahkan parameter waktu (?t=) agar terhindar dari cache Vercel
+                const response = await fetch('index.json?t=' + Date.now());
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data && data.length > 0) {
+                        allExtensions = data;
                     }
-                ];
+                }
+            } catch (error) {
+                console.log('Menggunakan data bawaan.');
             }
             
             document.getElementById('stat-total').innerText = String(allExtensions.length).padStart(2, '0');
