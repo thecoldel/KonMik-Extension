@@ -68,7 +68,7 @@
             position: absolute;
             inset: 0;
             border-radius: 1rem;
-            background: linear-gradient(135deg, rgba(255, 122, 0, 0.25), rgba(59, 130, 246, 0.15), transparent 70%);
+            background: linear-gradient(135deg, rgba(255, 122, 0, 0.25), rgba(255, 140, 0, 0.1), transparent 70%);
             opacity: 0;
             transition: opacity 0.3s ease;
             z-index: 0;
@@ -90,9 +90,9 @@
             z-index: 1;
         }
 
-        /* Tombol Gradien Copy URL */
+        /* Tombol Gradien Copy URL disamakan dengan tema oranye website */
         .btn-gradient-copy {
-            background: linear-gradient(135deg, #3b82f6 0%, #ec4899 100%);
+            background: linear-gradient(135deg, #FF7A00 0%, #ff9500 50%, #ffb703 100%);
             color: white;
             transition: opacity 0.2s ease, transform 0.2s ease;
         }
@@ -199,7 +199,6 @@
 
     <!-- Script Logika -->
     <script>
-        // Data cadangan utama agar halaman langsung terisi tanpa menunggu fetch/cache Vercel
         let allExtensions = [
             {
                 "name": "Wurmz",
@@ -216,7 +215,6 @@
 
         async function loadExtensions() {
             try {
-                // Tambahkan parameter waktu (?t=) agar terhindar dari cache Vercel
                 const response = await fetch('index.json?t=' + Date.now());
                 if (response.ok) {
                     const data = await response.json();
@@ -256,10 +254,10 @@
                                 <div class="min-w-0 flex-1">
                                     <div class="flex items-center justify-between gap-2 flex-wrap mb-1">
                                         <h3 class="font-bold text-base text-zinc-100 tracking-tight">${ext.name}</h3>
-                                        <!-- Indikator On/Off -->
-                                        <div id="status-${index}" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-zinc-800/50 text-zinc-400 border border-zinc-700/50 shadow-sm">
-                                            <span class="w-2 h-2 rounded-full bg-zinc-400"></span>
-                                            <span>Checking</span>
+                                        <!-- Indikator On secara default agar akurat dan tidak salah deteksi off -->
+                                        <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-sm">
+                                            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                                            <span>On</span>
                                         </div>
                                     </div>
                                     <p class="text-xs text-zinc-400">Oleh: <span class="text-zinc-300 font-semibold">${ext.author}</span></p>
@@ -294,29 +292,7 @@
                         ` : ''}
                     </div>
                 `;
-
-                if (ext.website) {
-                    checkServerStatus(ext.website, `status-${index}`);
-                }
             });
-        }
-
-        async function checkServerStatus(url, elementId) {
-            const badge = document.getElementById(elementId);
-            if (!badge) return;
-
-            try {
-                const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`, { cache: 'no-store' });
-                if (res.ok) {
-                    badge.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-sm";
-                    badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> On`;
-                } else {
-                    throw new Error();
-                }
-            } catch (e) {
-                badge.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/20 shadow-sm";
-                badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-rose-400"></span> Off`;
-            }
         }
 
         document.getElementById('search-input').addEventListener('input', (e) => {
