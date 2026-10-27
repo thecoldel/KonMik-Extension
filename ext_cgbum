@@ -1,0 +1,226 @@
+// ID: ext_cgbum
+// NAME: Cgbum
+// VERSION: 1.1.0
+// COLOR: #FF7A00
+// ICON: https://cgbum.com/favicon.ico
+// REFERER: https://cgbum.com/
+
+const BASE_URL = 'https://cgbum.com';
+const USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36';
+
+const headers = {
+    'User-Agent': USER_AGENT,
+    'Referer': BASE_URL + '/',
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+};
+
+function cleanPath(path) {
+    if (!path) return '';
+    let cleaned = path.replace(/^https?:\/\/[^\/]+/, '').replace(/^\/+/, '');
+    
+    // Menghapus prefix /komik/ jika ada
+    if (cleaned.startsWith('komik/')) {
+        cleaned = cleaned.substring(6);
+    }
+    
+    // Menghapus awalan /baca/ jika itu link chapter
+    if (cleaned.startsWith('baca/')) {
+        cleaned = cleaned.substring(5);
+    }
+
+    if (cleaned.endsWith('/')) {
+        cleaned = cleaned.slice(0, -1);
+    }
+    return cleaned;
+}
+
+function decodeHTML(str) {
+    if (!str) return '';
+    return str
+        .replace(/&#(\d+);/g, (match, dec) => String.fromCharCode(dec))
+        .replace(/&#x([0-9a-fA-F]+);/g, (match, hex) => String.fromCharCode(parseInt(hex, 16)))
+        .replace(/&amp;/g, '&')
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&quot;/g, '"')
+        .replace(/&#39;/g, "'")
+        .replace(/&nbsp;/g, ' ');
+}
+
+const KonmikExtension = {
+    // -- 1. Memuat daftar komik & pencarian --
+    async getList(page, query, filters) {
+        const pageNum = page || 1;
+        let url = `${BASE_URL}/daftar-komik?page=${pageNum}`;
+        
+        if (query) {
+            url = `${BASE_URL}/cari?q=${encodeURIComponent(query)}&page=${pageNum}`;
+        }
+        
+        const res = await fetch(url, { headers });
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+        const html = await res.text();
+        
+        const mangaList = [];
+        
+        // Regex menangkap seluruh kotak komik dari class="comic-card"
+        const cardRegex = /<article class="comic-card[^>]*>[\s\S]*?<a href="([^"]*\/komik\/[^"]+)"[^>]*>[\s\S]*?<img[^>]+src="([^"]+)"[\s\S]*?<h3 class="comic-card-title"[^>]*><a[^>]*>(.*?)<\/a>/gs;
+        
+        let match;
+        while ((match = cardRegex.exec(html)) !== null) {
+            let fullUrl = match[1];
+            let id = cleanPath(fullUrl);
+            let coverUrl = match[2].trim();
+            let title = decodeHTML(match[3].replace(/<[^>]*>/g, '').trim());
+            
+            if (!coverUrl.startsWith('http')) {
+                coverUrl = BASE_URL + coverUrl;
+            }
+            
+            if (id && title && !mangaList.some(m => m.id === id)) {
+                mangaList.push({
+                    id: id,
+                    title: title,
+                    cover_url: coverUrl,
+                    rating: '0.0',
+                    views: '-'
+                });
+            }
+        }
+        
+        // Fallback pencarian (Jika pola pencarian beda dengan pola daftar)
+        if (mangaList.length === 0) {
+            const backupRegex = /<a class="home-rec-card"[^>]+href="([^"]*\/komik\/[^"]+)"[^>]*>[\s\S]*?<img[^>]+src="([^"]+)"[\s\S]*?<h3>(.*?)<\/h3>/gs;
+            while ((match = backupRegex.exec(html)) !== null) {
+                let id = cleanPath(match[1]);
+                let coverUrl = match[2].trim();
+                let title = decodeHTML(match[3].replace(/<[^>]*>/g, '').trim());
+                
+                if (id && !mangaList.some(m => m.id === id)) {
+                    mangaList.push({ id, title, cover_url: coverUrl, rating: '0.0', views: '-' });
+                }
+            }
+        }
+        
+        return { manga_list: mangaList };
+    },
+
+    // -- 2. Memuat detail info komik & seluruh chapter --
+    async getDetail(slug) {
+        const cleanSlug = cleanPath(slug);
+        const url = `${BASE_URL}/komik/${cleanSlug}`;
+        
+        const res = await fetch(url, { headers });
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+        const html = await res.text();
+
+        // Cover Komik
+        let coverUrl = '';
+        const coverMatch = html.match(/<div class="comic-cover"[^>]*>[\s\S]*?<img[^>]+src="([^"]+)"/);
+        if (coverMatch) {
+            coverUrl = coverMatch[1].trim();
+            if (!coverUrl.startsWith('http')) coverUrl = BASE_URL + coverUrl;
+        }
+
+        // Judul Utama
+        let title = cleanSlug;
+        const titleMatch = html.match(/<h1>(.*?)<\/h1>/);
+        if (titleMatch) {
+            title = decodeHTML(titleMatch[1].replace('Bahasa Indonesia', '').replace(/<[^>]*>/g, '').trim());
+        }
+
+        // Deskripsi
+        let description = 'Tidak ada deskripsi';
+        const descMatch = html.match(/<div class="synopsis-content">([\s\S]*?)<\/div>/);
+        if (descMatch) {
+            description = decodeHTML(descMatch[1].replace(/<[^>]*>/g, '').trim());
+        }
+
+        // Author
+        let author = '?';
+        const authorMatch = html.match(/<span class="meta-label">Author<\/span><span class="meta-value">(.*?)<\/span>/);
+        if (authorMatch) author = decodeHTML(authorMatch[1].trim());
+
+        // Genre
+        let genres = [];
+        const genreRegex = /<a href="[^"]*\/genre\/[^"]*" class="genre-pill">(.*?)<\/a>/g;
+        let gMatch;
+        while ((gMatch = genreRegex.exec(html)) !== null) {
+            genres.push(decodeHTML(gMatch[1].trim()));
+        }
+
+        // --- Ekstraksi Chapter ---
+        let chapters = [];
+        const seenChapters = new Set();
+        
+        // Membaca link chapter dari dalam <div class="chapter-grid">
+        const chapterRegex = /<a href="([^"]*\/baca\/[^"]+)" class="ch-grid-item"[^>]*title="([^"]+)">/g;
+        
+        let cMatch;
+        while ((cMatch = chapterRegex.exec(html)) !== null) {
+            let chUrl = cMatch[1];
+            let chTitle = decodeHTML(cMatch[2].trim());
+            let chId = cleanPath(chUrl); // Menghasilkan format {slug}/chapter/{nomor}
+
+            if (chId && !seenChapters.has(chId)) {
+                seenChapters.add(chId);
+                chapters.push({
+                    id: chId,
+                    title: chTitle,
+                    date: ''
+                });
+            }
+        }
+
+        return {
+            title: title,
+            cover_url: coverUrl,
+            description: description,
+            rating: '0.0',
+            views: '-',
+            genres: genres,
+            author: author,
+            artist: '?',
+            chapters: chapters
+        };
+    },
+
+    // -- 3. Memuat gambar saat chapter dibaca --
+    async getChapterImages(chapterId) {
+        const cleanChapterId = cleanPath(chapterId);
+        const url = `${BASE_URL}/baca/${cleanChapterId}`;
+        
+        const res = await fetch(url, { headers });
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+        const html = await res.text();
+        
+        const images = [];
+        const seen = new Set();
+        
+        // Pada Cgbum, URL gambar disimpan di atribut data-url pada elemen .page-container
+        const dataUrlRegex = /<div class="page-container"[^>]*data-url="([^"]+)"/g;
+        let match;
+        
+        while ((match = dataUrlRegex.exec(html)) !== null) {
+            let src = match[1].trim();
+            if (src && !seen.has(src)) {
+                seen.add(src);
+                images.push(src);
+            }
+        }
+        
+        // Fallback jika fallback image langsung diload di <img>
+        if (images.length === 0) {
+            const fallbackImgRegex = /<div class="page-container"[^>]*>[\s\S]*?<img[^>]+(?:data-src|src)="([^"]+)"/g;
+            while ((match = fallbackImgRegex.exec(html)) !== null) {
+                let src = match[1].trim();
+                if (src && !seen.has(src)) {
+                    seen.add(src);
+                    images.push(src);
+                }
+            }
+        }
+        
+        return images;
+    }
+};
