@@ -1,8 +1,8 @@
 [
   {
     "name": "Wurmz",
-    "author": "Konmik",
-    "version": "2.9.0",
+    "author": "thecoldel",
+    "version": "2.9.1",
     "pkg": "ext_wurmz",
     "lang": "id",
     "file": "wurmz.js",
@@ -12,15 +12,15 @@
     "nsfw": 0
   },
   {
-    "name": "NamaKomikBaru",
-    "author": "Konmik",
-    "version": "1.0.0",
-    "pkg": "ext_namakomik",
+    "name": "Cgbum",
+    "author": "thecoldel",
+    "version": "1.1.0",
+    "pkg": "ext_cgbum",
     "lang": "id",
-    "file": "namakomik.js",
-    "icon": "https://situskomikbaru.com/favicon.ico",
-    "website": "https://situskomikbaru.com",
-    "raw_url": "",
+    "file": "cgbum.js",
+    "icon": "https://cgbum.com/favicon.ico",
+    "website": "https://cgbum.com/",
+    "raw_url": "https://gist.githubusercontent.com/thecoldel/30313251beb853c83da0efb231a2c695/raw/cgbum.js",
     "nsfw": 0
   }
 ]
